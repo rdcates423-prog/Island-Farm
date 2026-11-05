@@ -46,3 +46,18 @@ h1 {
 .cr1 { fill: var(--cr1); stroke: var(--cr1); } .cr2 { fill: var(--cr2); stroke: var(--cr2); }
 .lt { fill: var(--lt); stroke: var(--lt); } .ll { fill: var(--ll); stroke: var(--ll); } .lr { fill: var(--lr); stroke: var(--lr); }
 .tt { fill: var(--tt); stroke: var(--tt); } .tl { fill: var(--tl); stroke: var(--tl); } .tr { fill: var(--tr); stroke: var(--tr); }
+#farmer {
+  transition: transform 0.6s ease-in-out;
+  pointer-events: none;
+}
+.farmer-shadow { fill: rgba(0, 0, 0, 0.3); }
+.farmer-sprite { animation: farmer-bob 1.2s ease-in-out infinite; }
+.farmer-sprite.hop { animation: farmer-hop 0.6s ease-in-out; }
+@keyframes farmer-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes farmer-hop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
