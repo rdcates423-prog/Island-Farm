@@ -1,1 +1,48 @@
-
+:root {
+  --ocean: #1f3fa8; --sh1: #3568d0; --sh2: #2a52bc;
+  --title: #f6e9b8; --title-shadow: #0d1f5c;
+  --g0: #3f8f3a; --g1: #4a9d41; --g2: #377f34;
+  --d0: #7a4a2a; --d1: #6b4025; --dline: #4a2a15;
+  --p0: #8a8a6a; --p1: #7b7b5f; --p2: #97977b; --pline: #5c5c46;
+  --cl1: #4a2d18; --cl2: #2e1b0d; --cr1: #3a2412; --cr2: #23150a;
+  --lt: #62c250; --ll: #3f8f3a; --lr: #2c722e;
+  --tt: #6b4526; --tl: #5a3a1e; --tr: #432a12;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ocean: #15307f; --sh1: #25509f; --sh2: #1d408f;
+    --g0: #36783a; --g1: #3e8638; --g2: #2e6a2c;
+  }
+}
+:root[data-theme="dark"] {
+  --ocean: #15307f; --sh1: #25509f; --sh2: #1d408f;
+  --g0: #36783a; --g1: #3e8638; --g2: #2e6a2c;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; height: 100%; overflow-x: hidden;
+  background: var(--ocean);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4vh; padding: 0 6px;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  -webkit-tap-highlight-color: transparent;
+}
+h1 {
+  margin: 0; text-align: center; font-weight: 400;
+  font-size: clamp(20px, 7vw, 38px); line-height: 1.3;
+  color: var(--title); text-shadow: 3px 3px 0 var(--title-shadow);
+}
+#world { width: 100%; max-width: 760px; height: auto; display: block; }
+#world polygon { stroke-width: .8; stroke-linejoin: round; }
+.sh1 { fill: var(--sh1); stroke: var(--sh1); } .sh2 { fill: var(--sh2); stroke: var(--sh2); }
+.g0 { fill: var(--g0); stroke: var(--g0); } .g1 { fill: var(--g1); stroke: var(--g1); } .g2 { fill: var(--g2); stroke: var(--g2); }
+.d0 { fill: var(--d0); stroke: var(--dline); } .d1 { fill: var(--d1); stroke: var(--dline); }
+.p0 { fill: var(--p0); stroke: var(--pline); } .p1 { fill: var(--p1); stroke: var(--pline); } .p2 { fill: var(--p2); stroke: var(--pline); }
+.cl1 { fill: var(--cl1); stroke: var(--cl1); } .cl2 { fill: var(--cl2); stroke: var(--cl2); }
+.cr1 { fill: var(--cr1); stroke: var(--cr1); } .cr2 { fill: var(--cr2); stroke: var(--cr2); }
+.lt { fill: var(--lt); stroke: var(--lt); } .ll { fill: var(--ll); stroke: var(--ll); } .lr { fill: var(--lr); stroke: var(--lr); }
+.tt { fill: var(--tt); stroke: var(--tt); } .tl { fill: var(--tl); stroke: var(--tl); } .tr { fill: var(--tr); stroke: var(--tr); }
