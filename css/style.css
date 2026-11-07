@@ -133,3 +133,31 @@ polygon.queued { stroke: #fff; stroke-width: 1.5; stroke-opacity: 0.85; }
 #toolbar .tool:active {
   transform: translateY(1px);
 }
+/* ---------- Step 05: Watering ---------- */
+
+/* dark brown watered tile */
+#world .moist { fill: #4a2a14 !important; }
+
+/* farmer tilts forward while watering */
+.farmer-sprite.water {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: farmer-water 0.5s ease-in-out;
+}
+@keyframes farmer-water {
+  0%   { transform: rotate(0deg); }
+  30%  { transform: rotate(-20deg); }
+  70%  { transform: rotate(-20deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* falling water drops */
+.water-drop {
+  pointer-events: none;
+  animation: water-drop 0.45s ease-in both;
+}
+@keyframes water-drop {
+  0%   { opacity: 0; transform: translateY(-14px); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(6px); }
+}
