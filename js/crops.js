@@ -10,7 +10,9 @@
   var layer = document.createElementNS(NS, "g");
   layer.setAttribute("id", "crops");
   layer.setAttribute("pointer-events", "none"); // taps go through to the dirt tile underneath
-  world.appendChild(layer);
+    // slide the crops in underneath the farmer so the farmer is drawn on top
+  var farmerEl = document.getElementById("farmer");
+  if (farmerEl) world.insertBefore(layer, farmerEl); else world.appendChild(layer);
 
   var planted = {}; // "x,y" -> { x, y, type, wet }
 
