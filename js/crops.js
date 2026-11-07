@@ -9,9 +9,10 @@
   // one layer that holds everything planted
   var layer = document.createElementNS(NS, "g");
   layer.setAttribute("id", "crops");
+  layer.setAttribute("pointer-events", "none"); // taps go through to the dirt tile underneath
   world.appendChild(layer);
 
-  var planted = {}; // "x,y" -> { x, y, type }
+  var planted = {}; // "x,y" -> { x, y, type, wet }
 
   function key(x, y) { return x + "," + y; }
 
@@ -24,6 +25,12 @@
 
   function has(x, y) {
     return !!planted[key(x, y)];
+  }
+
+  // true if the crop on tile (x, y) has been watered
+  function isWet(x, y) {
+    var p = planted[key(x, y)];
+    return !!(p && p.wet);
   }
 
   // puts a seed on tile (x, y); returns false if the tile is already taken
@@ -41,10 +48,18 @@
     }, g);
     sprite.textContent = "🌱";
 
-    planted[key(x, y)] = { x: x, y: y, type: "seed" };
+    planted[key(x, y)] = { x: x, y: y, type: "seed", wet: false };
+    return true;
+  }
+
+  // waters the crop on tile (x, y); returns false if there is nothing to water
+  function water(x, y) {
+    var p = planted[key(x, y)];
+    if (!p) return false;
+    p.wet = true;
     return true;
   }
 
   // other files (farmer.js) use these
-  window.Crops = { plant: plant, has: has };
+  window.Crops = { plant: plant, has: has, water: water, isWet: isWet };
 })();
