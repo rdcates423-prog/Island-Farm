@@ -5,15 +5,16 @@
 
   var STEP_MS = 350;  // time to walk one tile
   var PLANT_MS = 450; // short pause after planting
+  var WATER_MS = 500; // pause while watering
 
   var world = document.getElementById("world");
   if (!world) return;
 
   var fx = 6, fy = 6; // start on the middle of the paths
 
-  var queue = [];     // tiles waiting to be planted: { x, y }
+  var queue = [];     // jobs waiting: { x, y, action, el }
   var queued = {};    // "x,y" -> the tile polygon (so we can un-highlight it)
-  var busy = false;   // true while walking to / planting on a tapped tile
+  var busy = false;   // true while walking to / working on a tapped tile
   var wanderTimer = null;
 
   function make(name, attrs, parent) {
@@ -23,7 +24,7 @@
     return e;
   }
 
-  var farmer = make("g", { id: "farmer" }, world);
+  var farmer = make("g", { id: "farmer", "pointer-events": "none" }, world);
   make("ellipse", { "class": "farmer-shadow", cx: 0, cy: 0, rx: 9, ry: 4 }, farmer);
   var sprite = make("text", {
     "class": "farmer-sprite", x: 0, y: -1,
@@ -99,6 +100,60 @@
     step();
   }
 
+  // ---------- watering (Step 05) ----------
+
+  // three little 💧 drops fall next to the farmer's feet
+  function splash(x, y) {
+    var cx = OX + (x - y) * TW / 2 + 12;
+    var cy = OY + (x + y) * TH / 2 + TH / 2;
+    var offsets = [-6, 0, 6];
+    var drops = [];
+    for (var i = 0; i < offsets.length; i++) {
+      var d = make("text", {
+        "class": "water-drop", x: cx + offsets[i], y: cy - 4,
+        "text-anchor": "middle", "font-size": 10
+      }, world);
+      d.style.animationDelay = (i * 100) + "ms";
+      d.textContent = "💧";
+      drops.push(d);
+    }
+    setTimeout(function () {
+      for (var j = 0; j < drops.length; j++) {
+        if (drops[j].parentNode) drops[j].parentNode.removeChild(drops[j]);
+      }
+    }, WATER_MS + 100);
+  }
+
+  // does the job for one tile once the farmer has arrived
+  function doJob(t, finish) {
+    var k = t.x + "," + t.y;
+
+    function unmark() {
+      if (queued[k]) {
+        queued[k].classList.remove("queued");
+        delete queued[k];
+      }
+    }
+
+    if (t.action === "water") {
+      sprite.classList.remove("hop");
+      sprite.classList.add("water");
+      splash(t.x, t.y);
+      setTimeout(function () {
+        sprite.classList.remove("water");
+        if (window.Crops) window.Crops.water(t.x, t.y);
+        t.el.classList.add("moist"); // dark brown tile (see style.css)
+        unmark();
+        finish();
+      }, WATER_MS);
+    } else {
+      if (window.Crops) window.Crops.plant(t.x, t.y);
+      unmark();
+      hop();
+      setTimeout(finish, PLANT_MS);
+    }
+  }
+
   function next() {
     var t = queue.shift();
     if (!t) {
@@ -108,32 +163,32 @@
     }
     busy = true;
     walkTo(t.x, t.y, function () {
-      var k = t.x + "," + t.y;
-      if (window.Crops) window.Crops.plant(t.x, t.y);
-      if (queued[k]) {
-        queued[k].classList.remove("queued");
-        delete queued[k];
-      }
-      hop();
-      setTimeout(next, PLANT_MS);
+      doJob(t, next);
     });
   }
 
   world.addEventListener("click", function (e) {
-    // Step 04: only the Plant tool plants. Water and Harvest will get their own steps.
-    if (window.Tool && window.Tool.get() !== "plant") return;
+    var tool = window.Tool ? window.Tool.get() : "plant";
+    // Plant and Water have jobs now. Harvest will get its own step.
+    if (tool !== "plant" && tool !== "water") return;
 
     var el = e.target;
     if (!el || !el.getAttribute || el.getAttribute("data-plot") === null) return; // not a dirt tile
 
     var t = tileOf(el);
     var k = t.x + "," + t.y;
-    if (queued[k]) return;                                  // already waiting
-    if (window.Crops && window.Crops.has(t.x, t.y)) return; // already planted
+    if (queued[k]) return; // already waiting
+
+    if (tool === "plant") {
+      if (window.Crops && window.Crops.has(t.x, t.y)) return; // already planted
+    } else {
+      if (!window.Crops || !window.Crops.has(t.x, t.y)) return; // nothing to water
+      if (window.Crops.isWet(t.x, t.y)) return;                 // already moist
+    }
 
     queued[k] = el;
     el.classList.add("queued");
-    queue.push(t);
+    queue.push({ x: t.x, y: t.y, action: tool, el: el });
 
     if (!busy) {
       clearTimeout(wanderTimer);
