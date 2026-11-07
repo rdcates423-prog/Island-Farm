@@ -120,6 +120,9 @@
   }
 
   world.addEventListener("click", function (e) {
+    // Step 04: only the Plant tool plants. Water and Harvest will get their own steps.
+    if (window.Tool && window.Tool.get() !== "plant") return;
+
     var el = e.target;
     if (!el || !el.getAttribute || el.getAttribute("data-plot") === null) return; // not a dirt tile
 
