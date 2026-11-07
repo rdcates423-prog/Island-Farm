@@ -83,3 +83,53 @@ polygon.queued { stroke: #fff; stroke-width: 1.5; stroke-opacity: 0.85; }
   70% { transform: scale(1.3); }
   100% { transform: scale(1); }
 }
+/* ---------- Step 04: bottom toolbar ---------- */
+
+#toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(15, 30, 45, 0.85);
+  border: 2px solid #0b1620;
+  border-radius: 10px;
+  z-index: 10;
+}
+
+#toolbar .tool {
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #ffffff;
+  background: #3a4a5a;
+  border: 2px solid #1b2530;
+  border-radius: 6px;
+  min-width: 68px;
+  min-height: 46px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#toolbar .tool-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+#toolbar .tool.active {
+  background: #f2c94c;
+  color: #222222;
+  border-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+#toolbar .tool:active {
+  transform: translateY(1px);
+}
