@@ -10,7 +10,7 @@
   var layer = document.createElementNS(NS, "g");
   layer.setAttribute("id", "crops");
   layer.setAttribute("pointer-events", "none"); // taps go through to the dirt tile underneath
-    // slide the crops in underneath the farmer so the farmer is drawn on top
+  // slide the crops in underneath the farmer so the farmer is drawn on top
   var farmerEl = document.getElementById("farmer");
   if (farmerEl) world.insertBefore(layer, farmerEl); else world.appendChild(layer);
 
@@ -23,6 +23,12 @@
     for (var k in attrs) e.setAttribute(k, attrs[k]);
     parent.appendChild(e);
     return e;
+  }
+
+  // moves the farmer to the end of the world so it is drawn on top of everything
+  function bringFarmerToFront() {
+    var f = document.getElementById("farmer");
+    if (f && world.lastChild !== f) world.appendChild(f);
   }
 
   function has(x, y) {
@@ -51,6 +57,7 @@
     sprite.textContent = "🌱";
 
     planted[key(x, y)] = { x: x, y: y, type: "seed", wet: false };
+    bringFarmerToFront();
     return true;
   }
 
