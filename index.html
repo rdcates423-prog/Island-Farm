@@ -7,11 +7,24 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <script src="js/main.js" defer></script>
+<script src="js/ui.js" defer></script>
 <script src="js/farmer.js" defer></script>
 <script src="js/crops.js" defer></script>
 </head>
 <body>
   <h1>Island Farm</h1>
   <svg id="world" viewBox="-20 0 612 372" role="img" aria-label="Isometric island with four 5 by 5 dirt plots separated by stone paths"></svg>
+
+  <div id="toolbar" role="toolbar" aria-label="Tools">
+    <button type="button" class="tool active" data-tool="plant" aria-pressed="true">
+      <span class="tool-icon">🌱</span><span class="tool-label">Plant</span>
+    </button>
+    <button type="button" class="tool" data-tool="water" aria-pressed="false">
+      <span class="tool-icon">💧</span><span class="tool-label">Water</span>
+    </button>
+    <button type="button" class="tool" data-tool="harvest" aria-pressed="false">
+      <span class="tool-icon">🧺</span><span class="tool-label">Harvest</span>
+    </button>
+  </div>
 </body>
 </html>
