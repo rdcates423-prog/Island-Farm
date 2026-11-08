@@ -206,3 +206,27 @@
     function onResize() {
       var z = base.w / cam.w;
       var mx = cam.x + cam.w / 2, my = cam.y + cam.h / 2;
+      fitBase();
+      cam.w = base.w / z;
+      cam.h = cam.w * base.h / base.w;
+      cam.x = mx - cam.w / 2;
+      cam.y = my - cam.h / 2;
+      apply();
+    }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('load', onResize);
+
+    window.gameCamera = {
+      zoomIn: function () { smoothZoom(1.5); },
+      zoomOut: function () { smoothZoom(1 / 1.5); },
+      reset: resetView,
+      get zoom() { return base.w / cam.w; }
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
