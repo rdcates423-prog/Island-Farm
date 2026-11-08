@@ -141,8 +141,9 @@
       splash(t.x, t.y);
       setTimeout(function () {
         sprite.classList.remove("water");
-        if (window.Crops) window.Crops.water(t.x, t.y);
-        t.el.classList.add("moist"); // dark brown tile (see style.css)
+        // CHANGED: crops.js now adds the "moist" class itself and removes it
+        // when the crop finishes growing, so we pass it the tile
+        if (window.Crops) window.Crops.water(t.x, t.y, t.el);
         unmark();
         finish();
       }, WATER_MS);
@@ -184,6 +185,7 @@
     } else {
       if (!window.Crops || !window.Crops.has(t.x, t.y)) return; // nothing to water
       if (window.Crops.isWet(t.x, t.y)) return;                 // already moist
+      if (window.Crops.isRipe(t.x, t.y)) return;                // CHANGED: ripe turnips need no water
     }
 
     queued[k] = el;
