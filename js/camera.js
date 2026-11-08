@@ -141,4 +141,43 @@
     window.addEventListener('pointercancel', endPointer);
 
     // A drag or pinch should not count as a tile tap
-    svg.addEventListener(
+        svg.addEventListener('click', function (e) {
+      if (suppressClick) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
+    // Stop iOS Safari from zooming the whole page
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+    // ---------- Zoom buttons (locked on screen) ----------
+    var box = document.createElement('div');
+    box.id = 'zoom-controls';
+    function makeBtn(label, title, fn) {
+      var btn = document.createElement('button');
+      btn.className = 'zoom-btn';
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.title = title;
+      btn.setAttribute('aria-label', title);
+      btn.addEventListener('click', fn);
+      box.appendChild(btn);
+    }
+    makeBtn('+', 'Zoom in', function () { smoothZoom(1.5); });
+    makeBtn('\u2212', 'Zoom out', function () { smoothZoom(1 / 1.5); });
+    makeBtn('1x', 'Reset zoom', resetView);
+    document.body.appendChild(box);
+
+    // Handy for later steps
+    window.gameCamera = {
+      zoomIn: function () { smoothZoom(1.5); },
+      zoomOut: function () { smoothZoom(1 / 1.5); },
+      reset: resetView,
+      get zoom() { return base.w / cam.w; }
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
