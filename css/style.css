@@ -161,3 +161,19 @@ polygon.queued { stroke: #fff; stroke-width: 1.5; stroke-opacity: 0.85; }
   20%  { opacity: 1; }
   100% { opacity: 0; transform: translateY(6px); }
 }
+.wet-soil {
+  fill: #3b2a1a;
+  opacity: 0.45;
+}
+
+.crop-pop {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: crop-pop 0.35s ease-out;
+}
+
+@keyframes crop-pop {
+  0%   { transform: scale(0.4); }
+  60%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
