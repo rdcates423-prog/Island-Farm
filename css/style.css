@@ -262,3 +262,32 @@ polygon.queued { stroke: #fff; stroke-width: 1.5; stroke-opacity: 0.85; }
   color: #222222;
   transform: translateY(1px);
 }
+
+/* ---------- Step 06b: Full-screen camera ---------- */
+
+#world {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  z-index: 0;
+}
+
+@supports (height: 100dvh) {
+  #world { height: 100dvh; }
+}
+
+h1 {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 52px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+#world.moving polygon {
+  shape-rendering: crispEdges;
+}
