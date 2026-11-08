@@ -219,3 +219,46 @@ polygon.queued { stroke: #fff; stroke-width: 1.5; stroke-opacity: 0.85; }
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-22px); }
 }
+/* ---------- Step 06: Camera zoom ---------- */
+
+#world {
+  touch-action: none;           /* lets us handle pinch and drag ourselves */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#zoom-controls {
+  position: fixed;
+  right: calc(10px + env(safe-area-inset-right, 0px));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(15, 30, 45, 0.85);
+  border: 2px solid #0b1620;
+  border-radius: 10px;
+  z-index: 10;
+}
+
+#zoom-controls .zoom-btn {
+  font-family: "Press Start 2P", monospace;
+  font-size: 14px;
+  color: #ffffff;
+  background: #3a4a5a;
+  border: 2px solid #1b2530;
+  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#zoom-controls .zoom-btn:active {
+  background: #f2c94c;
+  color: #222222;
+  transform: translateY(1px);
+}
