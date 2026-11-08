@@ -5,6 +5,8 @@
 
   // seconds each growth stage takes once the crop is watered
   var GROW_TIME = 4;
+  // NEW: how many seconds one watering lasts before the soil dries out
+  var WET_TIME = 6;
 
   // what each stage looks like
   var STAGES = {
@@ -24,7 +26,7 @@
   var farmerEl = document.getElementById("farmer");
   if (farmerEl) world.insertBefore(layer, farmerEl); else world.appendChild(layer);
 
-  // "x,y" -> { x, y, type, wet, timer, tile, group, sprite }
+  // "x,y" -> { x, y, type, wet, wetLeft, timer, tile, group, sprite }
   var planted = {};
 
   function key(x, y) { return x + "," + y; }
@@ -74,7 +76,7 @@
     sprite.textContent = STAGES.seed.emoji;
 
     planted[key(x, y)] = {
-      x: x, y: y, type: "seed", wet: false, timer: 0,
+      x: x, y: y, type: "seed", wet: false, wetLeft: 0, timer: 0,
       tile: null, group: g, sprite: sprite
     };
     bringFarmerToFront();
@@ -88,7 +90,9 @@
     if (!p) return false;
     if (p.type === "turnip") return false; // already fully grown
     p.wet = true;
-    p.timer = 0;
+    p.wetLeft = WET_TIME;  // CHANGED: a fresh drink of water that lasts WET_TIME seconds
+    // CHANGED: p.timer is NOT reset anymore, so a thirsty sprout keeps its progress
+    p.sprite.classList.remove("crop-thirsty"); // NEW: not thirsty any more
     if (tile) {
       p.tile = tile;
       tile.classList.add("moist"); // dark brown tile (already in your style.css)
@@ -96,7 +100,7 @@
     return true;
   }
 
-  // NEW: picks a ripe turnip. Removes it from the screen and leaves empty dirt.
+  // picks a ripe turnip. Removes it from the screen and leaves empty dirt.
   // returns true if something was harvested, false if the tile was not ripe
   function harvest(x, y) {
     var p = planted[key(x, y)];
@@ -121,22 +125,34 @@
   function update(dt) {
     for (var k in planted) {
       var p = planted[k];
-      if (!p.wet) continue;
+      if (!p.wet) continue; // CHANGED: dry crops are frozen, their timer does not move
 
       p.timer += dt;
-      if (p.timer < GROW_TIME) continue;
+      p.wetLeft -= dt; // NEW: the water slowly runs out
 
-      p.timer = 0;
-      if (p.type === "seed") {
-        setStage(p, "sprout");
-      } else if (p.type === "sprout") {
-        setStage(p, "turnip");
-        p.wet = false; // finished growing, soil dries out
+      if (p.timer >= GROW_TIME) {
+        p.timer = 0;
+        if (p.type === "seed") {
+          setStage(p, "sprout");
+        } else if (p.type === "sprout") {
+          setStage(p, "turnip");
+          p.wet = false; // finished growing, soil dries out
+          p.wetLeft = 0;
+          if (p.tile) p.tile.classList.remove("moist");
+          continue; // a finished turnip never gets thirsty
+        }
+      }
+
+      // NEW: out of water before finishing -> freeze and show it is thirsty
+      if (p.wetLeft <= 0) {
+        p.wet = false;
+        p.wetLeft = 0;
         if (p.tile) p.tile.classList.remove("moist");
+        p.sprite.classList.add("crop-thirsty");
       }
     }
   }
 
-  // other files (farmer.js, main.js) use these (CHANGED: added harvest)
+  // other files (farmer.js, main.js) use these
   window.Crops = { plant: plant, has: has, water: water, harvest: harvest, isWet: isWet, isRipe: isRipe, update: update };
 })();
