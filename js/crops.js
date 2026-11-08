@@ -96,6 +96,17 @@
     return true;
   }
 
+  // NEW: picks a ripe turnip. Removes it from the screen and leaves empty dirt.
+  // returns true if something was harvested, false if the tile was not ripe
+  function harvest(x, y) {
+    var p = planted[key(x, y)];
+    if (!p || p.type !== "turnip") return false;
+    if (p.tile) p.tile.classList.remove("moist"); // safety: make sure the dirt is dry
+    if (p.group && p.group.parentNode) p.group.parentNode.removeChild(p.group);
+    delete planted[key(x, y)]; // the tile is empty again, so it can be planted again
+    return true;
+  }
+
   // switches a crop to its next look and plays the little pop animation
   function setStage(p, type) {
     p.type = type;
@@ -126,6 +137,6 @@
     }
   }
 
-  // other files (farmer.js, main.js) use these
-  window.Crops = { plant: plant, has: has, water: water, isWet: isWet, isRipe: isRipe, update: update };
+  // other files (farmer.js, main.js) use these (CHANGED: added harvest)
+  window.Crops = { plant: plant, has: has, water: water, harvest: harvest, isWet: isWet, isRipe: isRipe, update: update };
 })();
