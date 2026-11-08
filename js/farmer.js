@@ -6,8 +6,9 @@
   var STEP_MS = 350;    // time to walk one tile
   var PLANT_MS = 450;   // short pause after planting
   var WATER_MS = 500;   // pause while watering
-  var HARVEST_MS = 500; // NEW: short pause while harvesting
-  var HARVEST_GOLD = 10; // NEW: gold earned per turnip
+  var HARVEST_MS = 500; // short pause while harvesting
+  var HARVEST_GOLD = 10; // gold earned per turnip
+  var PLANT_COST = 8;    // NEW: gold it costs to plant one turnip
 
   var world = document.getElementById("world");
   if (!world) return;
@@ -126,17 +127,18 @@
     }, WATER_MS + 100);
   }
 
-  // ---------- harvesting (NEW) ----------
+  // ---------- floating text ----------
 
-  // a little "+10 🪙" floats up from the tile and fades out
-  function goldPop(x, y) {
+  // CHANGED: now takes the message as a third piece, so it can show
+  // "+10 🪙", "-8 🪙" or "Need 8 🪙" (it uses the same gold-pop style)
+  function goldPop(x, y, message) {
     var cx = OX + (x - y) * TW / 2;
     var cy = OY + (x + y) * TH / 2 + TH / 2;
     var t = make("text", {
       "class": "gold-pop", x: cx, y: cy - 10,
       "text-anchor": "middle", "font-size": 13
     }, world);
-    t.textContent = "+" + HARVEST_GOLD + " 🪙";
+    t.textContent = message;
     setTimeout(function () {
       if (t.parentNode) t.parentNode.removeChild(t);
     }, 1100);
@@ -160,17 +162,17 @@
       setTimeout(function () {
         sprite.classList.remove("water");
         // crops.js adds the "moist" class itself and removes it
-        // when the crop finishes growing, so we pass it the tile
+        // when the crop finishes growing or dries out, so we pass it the tile
         if (window.Crops) window.Crops.water(t.x, t.y, t.el);
         unmark();
         finish();
       }, WATER_MS);
     } else if (t.action === "harvest") {
-      // NEW: pick the turnip, then pay the farmer
+      // pick the turnip, then pay the farmer
       var got = window.Crops && window.Crops.harvest(t.x, t.y);
       if (got) {
         if (window.Gold) window.Gold.add(HARVEST_GOLD);
-        goldPop(t.x, t.y);
+        goldPop(t.x, t.y, "+" + HARVEST_GOLD + " 🪙"); // CHANGED: message added
       }
       unmark();
       hop();
@@ -198,7 +200,6 @@
 
   world.addEventListener("click", function (e) {
     var tool = window.Tool ? window.Tool.get() : "plant";
-    // CHANGED: Harvest has a job now too
     if (tool !== "plant" && tool !== "water" && tool !== "harvest") return;
 
     var el = e.target;
@@ -210,12 +211,22 @@
 
     if (tool === "plant") {
       if (window.Crops && window.Crops.has(t.x, t.y)) return; // already planted
+
+      // NEW: planting costs gold
+      if (window.Gold && window.Gold.get() < PLANT_COST) {
+        goldPop(t.x, t.y, "Need " + PLANT_COST + " 🪙"); // not enough gold, block it
+        return;
+      }
+      if (window.Gold) {
+        window.Gold.add(-PLANT_COST); // pay now, so you can't queue more than you can afford
+        goldPop(t.x, t.y, "-" + PLANT_COST + " 🪙");
+      }
     } else if (tool === "water") {
       if (!window.Crops || !window.Crops.has(t.x, t.y)) return; // nothing to water
       if (window.Crops.isWet(t.x, t.y)) return;                 // already moist
       if (window.Crops.isRipe(t.x, t.y)) return;                // ripe turnips need no water
     } else {
-      // NEW: harvest only works on a ripe turnip
+      // harvest only works on a ripe turnip
       if (!window.Crops || !window.Crops.isRipe(t.x, t.y)) return;
     }
 
