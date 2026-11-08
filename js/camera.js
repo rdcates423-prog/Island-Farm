@@ -2,9 +2,9 @@
 (function () {
   'use strict';
 
-  var MIN_ZOOM = 1;          // 1 = whole island visible
-  var MAX_ZOOM = 4;          // 4 = four times closer
-  var DRAG_THRESHOLD = 10;   // pixels a finger must move before it counts as a pan
+  var MIN_ZOOM = 1;
+  var MAX_ZOOM = 4;
+  var DRAG_THRESHOLD = 10;
 
   function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
 
@@ -12,7 +12,6 @@
     var svg = document.getElementById('world');
     if (!svg) { console.warn('camera.js: #world not found'); return; }
 
-    // Make sure the SVG has a viewBox to work with
     var vb = svg.viewBox.baseVal;
     if (!vb || vb.width === 0 || vb.height === 0) {
       var b = svg.getBBox();
@@ -30,7 +29,6 @@
       svg.setAttribute('viewBox', cam.x + ' ' + cam.y + ' ' + cam.w + ' ' + cam.h);
     }
 
-    // Zoom while keeping the point under (clientX, clientY) still on screen
     function zoomAt(factor, clientX, clientY) {
       var r = svg.getBoundingClientRect();
       var px = (clientX - r.left) / r.width;
@@ -71,13 +69,11 @@
       })();
     }
 
-    // ---------- Mouse wheel ----------
     svg.addEventListener('wheel', function (e) {
       e.preventDefault();
       zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
     }, { passive: false });
 
-    // ---------- Touch / mouse drag and pinch ----------
     var pointers = new Map();
     var lastDist = 0, lastMid = null, startPt = null;
     var panning = false, suppressClick = false;
@@ -121,7 +117,7 @@
       if (pointers.size === 1) {
         if (!panning) {
           if (Math.hypot(e.clientX - startPt.x, e.clientY - startPt.y) < DRAG_THRESHOLD) return;
-          if (cam.w >= base.w - 0.01) return;   // not zoomed in, nothing to pan
+          if (cam.w >= base.w - 0.01) return;
           panning = true;
           suppressClick = true;
         }
@@ -140,15 +136,12 @@
     window.addEventListener('pointerup', endPointer);
     window.addEventListener('pointercancel', endPointer);
 
-    // A drag or pinch should not count as a tile tap
-        svg.addEventListener('click', function (e) {
+    svg.addEventListener('click', function (e) {
       if (suppressClick) { e.stopPropagation(); e.preventDefault(); }
     }, true);
 
-    // Stop iOS Safari from zooming the whole page
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
-    // ---------- Zoom buttons (locked on screen) ----------
     var box = document.createElement('div');
     box.id = 'zoom-controls';
     function makeBtn(label, title, fn) {
@@ -166,7 +159,6 @@
     makeBtn('1x', 'Reset zoom', resetView);
     document.body.appendChild(box);
 
-    // Handy for later steps
     window.gameCamera = {
       zoomIn: function () { smoothZoom(1.5); },
       zoomOut: function () { smoothZoom(1 / 1.5); },
