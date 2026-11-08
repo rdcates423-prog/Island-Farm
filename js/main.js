@@ -86,3 +86,19 @@ for (s = 0; s <= 2 * (N - 1); s++) for (x = 0; x < N; x++) {
 }
 
 document.getElementById("world").innerHTML = o.join("");
+
+// ---------- background game loop ----------
+// Runs about 60 times a second and tells the crops how many seconds passed.
+var lastTime = null;
+
+function gameLoop(now) {
+  if (lastTime === null) lastTime = now;
+  var dt = (now - lastTime) / 1000; // seconds since the last frame
+  lastTime = now;
+  if (dt > 0.25) dt = 0.25; // if the tab was in the background, don't jump ahead
+
+  if (window.Crops && Crops.update) Crops.update(dt);
+
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
