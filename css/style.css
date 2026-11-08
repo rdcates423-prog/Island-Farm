@@ -291,3 +291,6 @@ h1 {
 #world.moving polygon {
   shape-rendering: crispEdges;
 }
+
+/* Step 08: a sprout that ran out of water looks faded */
+.crop-thirsty { opacity: 0.45 !important; }
