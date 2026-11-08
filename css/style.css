@@ -177,3 +177,45 @@ polygon.queued { stroke: #fff; stroke-width: 1.5; stroke-opacity: 0.85; }
   60%  { transform: scale(1.25); }
   100% { transform: scale(1); }
 }
+/* ---------- Gold counter + harvest (NEW) ---------- */
+#gold {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffe08a;
+  font: 700 18px/1 system-ui, sans-serif;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+#gold.bump {
+  animation: goldBump 0.35s ease-out;
+}
+
+@keyframes goldBump {
+  0%   { transform: translateX(-50%) scale(1); }
+  40%  { transform: translateX(-50%) scale(1.25); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+.gold-pop {
+  fill: #ffe08a;
+  stroke: #7a5a00;
+  stroke-width: 0.6;
+  paint-order: stroke;
+  font-weight: 700;
+  pointer-events: none;
+  animation: goldPop 1s ease-out forwards;
+}
+
+@keyframes goldPop {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-22px); }
+}
