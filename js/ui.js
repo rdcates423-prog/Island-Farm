@@ -1,3 +1,33 @@
+// NEW: the Gold counter (a little pill at the top of the screen)
+(function () {
+  var gold = 20; // starting gold
+
+  var box = document.createElement("div");
+  box.id = "gold";
+  box.innerHTML = '🪙 <span id="gold-count"></span>';
+  document.body.appendChild(box);
+
+  var countEl = document.getElementById("gold-count");
+
+  function show() {
+    countEl.textContent = gold;
+  }
+
+  // other files use these: Gold.get() and Gold.add(10)
+  window.Gold = {
+    get: function () { return gold; },
+    add: function (n) {
+      gold += n;
+      show();
+      box.classList.remove("bump");
+      void box.offsetWidth; // lets the bump animation restart
+      box.classList.add("bump");
+    }
+  };
+
+  show();
+})();
+
 (function () {
   var toolbar = document.getElementById("toolbar");
   if (!toolbar) return;
