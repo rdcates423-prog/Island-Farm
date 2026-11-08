@@ -3,9 +3,11 @@
   // these must match the values at the top of main.js
   var N = 13, TW = 44, TH = 22, OX = 286, OY = 30;
 
-  var STEP_MS = 350;  // time to walk one tile
-  var PLANT_MS = 450; // short pause after planting
-  var WATER_MS = 500; // pause while watering
+  var STEP_MS = 350;    // time to walk one tile
+  var PLANT_MS = 450;   // short pause after planting
+  var WATER_MS = 500;   // pause while watering
+  var HARVEST_MS = 500; // NEW: short pause while harvesting
+  var HARVEST_GOLD = 10; // NEW: gold earned per turnip
 
   var world = document.getElementById("world");
   if (!world) return;
@@ -124,6 +126,22 @@
     }, WATER_MS + 100);
   }
 
+  // ---------- harvesting (NEW) ----------
+
+  // a little "+10 🪙" floats up from the tile and fades out
+  function goldPop(x, y) {
+    var cx = OX + (x - y) * TW / 2;
+    var cy = OY + (x + y) * TH / 2 + TH / 2;
+    var t = make("text", {
+      "class": "gold-pop", x: cx, y: cy - 10,
+      "text-anchor": "middle", "font-size": 13
+    }, world);
+    t.textContent = "+" + HARVEST_GOLD + " 🪙";
+    setTimeout(function () {
+      if (t.parentNode) t.parentNode.removeChild(t);
+    }, 1100);
+  }
+
   // does the job for one tile once the farmer has arrived
   function doJob(t, finish) {
     var k = t.x + "," + t.y;
@@ -141,12 +159,22 @@
       splash(t.x, t.y);
       setTimeout(function () {
         sprite.classList.remove("water");
-        // CHANGED: crops.js now adds the "moist" class itself and removes it
+        // crops.js adds the "moist" class itself and removes it
         // when the crop finishes growing, so we pass it the tile
         if (window.Crops) window.Crops.water(t.x, t.y, t.el);
         unmark();
         finish();
       }, WATER_MS);
+    } else if (t.action === "harvest") {
+      // NEW: pick the turnip, then pay the farmer
+      var got = window.Crops && window.Crops.harvest(t.x, t.y);
+      if (got) {
+        if (window.Gold) window.Gold.add(HARVEST_GOLD);
+        goldPop(t.x, t.y);
+      }
+      unmark();
+      hop();
+      setTimeout(finish, HARVEST_MS);
     } else {
       if (window.Crops) window.Crops.plant(t.x, t.y);
       unmark();
@@ -170,8 +198,8 @@
 
   world.addEventListener("click", function (e) {
     var tool = window.Tool ? window.Tool.get() : "plant";
-    // Plant and Water have jobs now. Harvest will get its own step.
-    if (tool !== "plant" && tool !== "water") return;
+    // CHANGED: Harvest has a job now too
+    if (tool !== "plant" && tool !== "water" && tool !== "harvest") return;
 
     var el = e.target;
     if (!el || !el.getAttribute || el.getAttribute("data-plot") === null) return; // not a dirt tile
@@ -182,10 +210,13 @@
 
     if (tool === "plant") {
       if (window.Crops && window.Crops.has(t.x, t.y)) return; // already planted
-    } else {
+    } else if (tool === "water") {
       if (!window.Crops || !window.Crops.has(t.x, t.y)) return; // nothing to water
       if (window.Crops.isWet(t.x, t.y)) return;                 // already moist
-      if (window.Crops.isRipe(t.x, t.y)) return;                // CHANGED: ripe turnips need no water
+      if (window.Crops.isRipe(t.x, t.y)) return;                // ripe turnips need no water
+    } else {
+      // NEW: harvest only works on a ripe turnip
+      if (!window.Crops || !window.Crops.isRipe(t.x, t.y)) return;
     }
 
     queued[k] = el;
