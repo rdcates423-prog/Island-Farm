@@ -5,14 +5,54 @@
 
   // seconds each growth stage takes once the crop is watered
   var GROW_TIME = 4;
-  // NEW: how many seconds one watering lasts before the soil dries out
+  // how many seconds one watering lasts before the soil dries out
   var WET_TIME = 6;
+
+  // ---------- pixel art crops ----------
+  // each letter is one pixel. "." = empty
+  var PX = 2; // size of one pixel (make it bigger for bigger crops)
+
+  var COLORS = {
+    g: "#62c250", // light green
+    G: "#3f8f3a", // mid green
+    D: "#2c722e", // dark green (stems)
+    s: "#d9b26b", // seed
+    S: "#a9803f", // seed shade
+    p: "#8e4a9e", // turnip purple (dark)
+    P: "#b06ac0", // turnip purple (light)
+    w: "#e8e2d0", // turnip white (shade)
+    W: "#fbf8ee"  // turnip white (light)
+  };
 
   // what each stage looks like
   var STAGES = {
-    seed:   { emoji: "🌱", size: 14 },
-    sprout: { emoji: "🌿", size: 16 },
-    turnip: { emoji: "🥕", size: 18 }
+    seed: [
+      ".....gg.....",
+      "....ggGg....",
+      "...ssSSss..."
+    ],
+    sprout: [
+      "..gg....gg..",
+      ".gGGg..gGGg.",
+      ".gGGGggGGGg.",
+      "..gGGDDGGg..",
+      "...ggDDgg...",
+      ".....DD.....",
+      ".....DD....."
+    ],
+    turnip: [
+      "..g..gg..g..",
+      "..gG.gg.Gg..",
+      "...gGGGGg...",
+      "....gGGg....",
+      "...pPPPPp...",
+      "..pPPPPPPp..",
+      "..wwWWWWww..",
+      "..wWWWWWWw..",
+      "...wWWWWw...",
+      "....wWWw....",
+      ".....ww....."
+    ]
   };
 
   var world = document.getElementById("world");
@@ -26,7 +66,7 @@
   var farmerEl = document.getElementById("farmer");
   if (farmerEl) world.insertBefore(layer, farmerEl); else world.appendChild(layer);
 
-  // "x,y" -> { x, y, type, wet, wetLeft, timer, tile, group, sprite }
+  // "x,y" -> { x, y, type, wet, wetLeft, timer, tile, group, sprite, cx, bottom }
   var planted = {};
 
   function key(x, y) { return x + "," + y; }
@@ -36,6 +76,27 @@
     for (var k in attrs) e.setAttribute(k, attrs[k]);
     parent.appendChild(e);
     return e;
+  }
+
+  // draws a letter grid into "parent", centered on cx, with its bottom edge at "bottom"
+  function drawPixels(parent, rows, cx, bottom) {
+    var left = cx - (rows[0].length * PX) / 2;
+    var top = bottom - rows.length * PX;
+    for (var r = 0; r < rows.length; r++) {
+      var row = rows[r];
+      var c = 0;
+      while (c < row.length) {
+        var ch = row.charAt(c);
+        if (ch === ".") { c++; continue; }
+        var start = c;                       // join same-colour pixels into one bar
+        while (c < row.length && row.charAt(c) === ch) c++;
+        make("rect", {
+          x: left + start * PX, y: top + r * PX,
+          width: (c - start) * PX + 0.05, height: PX + 0.05,
+          fill: COLORS[ch]
+        }, parent);
+      }
+    }
   }
 
   // moves the farmer to the end of the world so it is drawn on top of everything
@@ -66,18 +127,18 @@
 
     var cx = OX + (x - y) * TW / 2;
     var cy = OY + (x + y) * TH / 2 + TH / 2;
+    var bottom = cy + 4; // where the crop's "feet" sit on the soil mound
 
     var g = make("g", { "class": "crop", "data-x": x, "data-y": y }, layer);
     make("ellipse", { "class": "seed-mound", cx: cx, cy: cy + 2, rx: 7, ry: 3.5 }, g);
-    var sprite = make("text", {
-      "class": "seed-sprite", x: cx, y: cy + 6,
-      "text-anchor": "middle", "font-size": STAGES.seed.size
+    var sprite = make("g", {
+      "class": "seed-sprite", "shape-rendering": "crispEdges"
     }, g);
-    sprite.textContent = STAGES.seed.emoji;
+    drawPixels(sprite, STAGES.seed, cx, bottom);
 
     planted[key(x, y)] = {
       x: x, y: y, type: "seed", wet: false, wetLeft: 0, timer: 0,
-      tile: null, group: g, sprite: sprite
+      tile: null, group: g, sprite: sprite, cx: cx, bottom: bottom
     };
     bringFarmerToFront();
     return true;
@@ -90,9 +151,9 @@
     if (!p) return false;
     if (p.type === "turnip") return false; // already fully grown
     p.wet = true;
-    p.wetLeft = WET_TIME;  // CHANGED: a fresh drink of water that lasts WET_TIME seconds
-    // CHANGED: p.timer is NOT reset anymore, so a thirsty sprout keeps its progress
-    p.sprite.classList.remove("crop-thirsty"); // NEW: not thirsty any more
+    p.wetLeft = WET_TIME;  // a fresh drink of water that lasts WET_TIME seconds
+    // p.timer is NOT reset, so a thirsty sprout keeps its progress
+    p.sprite.classList.remove("crop-thirsty"); // not thirsty any more
     if (tile) {
       p.tile = tile;
       tile.classList.add("moist"); // dark brown tile (already in your style.css)
@@ -114,8 +175,8 @@
   // switches a crop to its next look and plays the little pop animation
   function setStage(p, type) {
     p.type = type;
-    p.sprite.textContent = STAGES[type].emoji;
-    p.sprite.setAttribute("font-size", STAGES[type].size);
+    while (p.sprite.firstChild) p.sprite.removeChild(p.sprite.firstChild); // erase the old pixels
+    drawPixels(p.sprite, STAGES[type], p.cx, p.bottom);                    // draw the new ones
     p.sprite.classList.remove("crop-pop");
     p.sprite.getBoundingClientRect(); // forces the browser to restart the animation
     p.sprite.classList.add("crop-pop");
@@ -125,10 +186,10 @@
   function update(dt) {
     for (var k in planted) {
       var p = planted[k];
-      if (!p.wet) continue; // CHANGED: dry crops are frozen, their timer does not move
+      if (!p.wet) continue; // dry crops are frozen, their timer does not move
 
       p.timer += dt;
-      p.wetLeft -= dt; // NEW: the water slowly runs out
+      p.wetLeft -= dt; // the water slowly runs out
 
       if (p.timer >= GROW_TIME) {
         p.timer = 0;
@@ -143,7 +204,7 @@
         }
       }
 
-      // NEW: out of water before finishing -> freeze and show it is thirsty
+      // out of water before finishing -> freeze and show it is thirsty
       if (p.wetLeft <= 0) {
         p.wet = false;
         p.wetLeft = 0;
