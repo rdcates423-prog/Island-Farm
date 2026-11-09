@@ -8,7 +8,7 @@
   var WATER_MS = 500;   // pause while watering
   var HARVEST_MS = 500; // short pause while harvesting
   var HARVEST_GOLD = 10; // gold earned per turnip
-  var PLANT_COST = 6;    // NEW: gold it costs to plant one turnip
+  var PLANT_COST = 6;    // gold it costs to plant one turnip
 
   var world = document.getElementById("world");
   if (!world) return;
@@ -29,11 +29,63 @@
 
   var farmer = make("g", { id: "farmer", "pointer-events": "none" }, world);
   make("ellipse", { "class": "farmer-shadow", cx: 0, cy: 0, rx: 9, ry: 4 }, farmer);
-  var sprite = make("text", {
-    "class": "farmer-sprite", x: 0, y: -1,
-    "text-anchor": "middle", "font-size": 24
+
+  // ---------- pixel art farmer ----------
+  // each letter is one pixel. "." = empty
+  var PIXELS = [
+    "....YYYY....",
+    "...YYYYYY...",
+    "...RRRRRR...",
+    ".YYYYYYYYYY.",
+    "..BSSSSSSB..",
+    "..SSESSESS..",
+    "...SSSSSS...",
+    "..TTTTTTTT..",
+    ".TTOOOOOOTT.",
+    ".TTOGOOGOTT.",
+    ".SSOOOOOOSS.",
+    "...OOOOOO...",
+    "...OO..OO...",
+    "...OO..OO...",
+    "..KKK..KKK..",
+    "..KKK..KKK.."
+  ];
+  var COLORS = {
+    Y: "#e9c45a", // straw hat
+    R: "#b5472f", // hat band
+    B: "#5a3a1e", // hair
+    S: "#f4c7a0", // skin
+    E: "#1b1b1b", // eyes
+    T: "#c8443a", // red shirt
+    O: "#3a64c9", // blue overalls
+    G: "#ffe08a", // overall buttons
+    K: "#4a2d18"  // boots
+  };
+  var PX = 1.5; // size of one pixel (make it bigger for a bigger farmer)
+
+  var sprite = make("g", {
+    "class": "farmer-sprite", "shape-rendering": "crispEdges"
   }, farmer);
-  sprite.textContent = "🧑‍🌾";
+
+  (function drawFarmer() {
+    var left = -(PIXELS[0].length * PX) / 2;   // centers the farmer
+    var top = 1 - PIXELS.length * PX;          // feet land on the shadow
+    for (var r = 0; r < PIXELS.length; r++) {
+      var row = PIXELS[r];
+      var c = 0;
+      while (c < row.length) {
+        var ch = row.charAt(c);
+        if (ch === ".") { c++; continue; }
+        var start = c;                         // join same-colour pixels into one bar
+        while (c < row.length && row.charAt(c) === ch) c++;
+        make("rect", {
+          x: left + start * PX, y: top + r * PX,
+          width: (c - start) * PX + 0.05, height: PX + 0.05,
+          fill: COLORS[ch]
+        }, sprite);
+      }
+    }
+  })();
 
   function place() {
     var cx = OX + (fx - fy) * TW / 2;
@@ -129,8 +181,7 @@
 
   // ---------- floating text ----------
 
-  // CHANGED: now takes the message as a third piece, so it can show
-  // "+10 🪙", "-8 🪙" or "Need 8 🪙" (it uses the same gold-pop style)
+  // shows "+10 🪙", "-6 🪙" or "Need 6 🪙" (it uses the gold-pop style)
   function goldPop(x, y, message) {
     var cx = OX + (x - y) * TW / 2;
     var cy = OY + (x + y) * TH / 2 + TH / 2;
@@ -172,7 +223,7 @@
       var got = window.Crops && window.Crops.harvest(t.x, t.y);
       if (got) {
         if (window.Gold) window.Gold.add(HARVEST_GOLD);
-        goldPop(t.x, t.y, "+" + HARVEST_GOLD + " 🪙"); // CHANGED: message added
+        goldPop(t.x, t.y, "+" + HARVEST_GOLD + " 🪙");
       }
       unmark();
       hop();
@@ -212,7 +263,7 @@
     if (tool === "plant") {
       if (window.Crops && window.Crops.has(t.x, t.y)) return; // already planted
 
-      // NEW: planting costs gold
+      // planting costs gold
       if (window.Gold && window.Gold.get() < PLANT_COST) {
         goldPop(t.x, t.y, "Need " + PLANT_COST + " 🪙"); // not enough gold, block it
         return;
