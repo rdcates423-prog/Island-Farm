@@ -8,7 +8,7 @@
   var WATER_MS = 500;   // pause while watering
   var HARVEST_MS = 500; // short pause while harvesting
   var HARVEST_GOLD = 10; // gold earned per turnip
-  var PLANT_COST = 8;    // NEW: gold it costs to plant one turnip
+  var PLANT_COST = 6;    // NEW: gold it costs to plant one turnip
 
   var world = document.getElementById("world");
   if (!world) return;
